@@ -24,11 +24,10 @@ public class Routable {
     }
 
     public static Routable from(Object instance, Method instanceMethod) {
-        if(!isMethodLookLikeARoute(instanceMethod)) {
+        if (!isMethodLookLikeARoute(instanceMethod)) {
             String errorMessage = String.format(
                     "The method %s.%s does not look like a route handler (should take 3 parameters : Request, Response, MatchContext)",
-                    instance.getClass().getSimpleName(),
-                    instanceMethod.getName()
+                    new Object[]{instance.getClass().getSimpleName(), instanceMethod.getName()}
             );
             throw new IllegalAccessError(errorMessage);
         }
@@ -37,14 +36,14 @@ public class Routable {
 
     public void handle(Request request, Response response, MatchContext context) {
         try {
-            instanceMethod.invoke(instance, request, response, context);
+            instanceMethod.invoke(instance, new Object[]{request, response, context});
         } catch (Exception e) {
             sendSystemError(response);
         }
     }
 
     protected void sendSystemError(Response response) {
-        if(!response.isCommitted()) {
+        if (!response.isCommitted()) {
             try {
                 response.setCode(500);
                 response.getPrintStream().println("Error : fail to invoke the given method");
@@ -56,10 +55,11 @@ public class Routable {
     }
 
     private static boolean isMethodLookLikeARoute(Method method) {
-        return method.getParameterCount() == 3 &&
-                method.getParameterTypes()[0].equals(Request.class) &&
-                method.getParameterTypes()[1].equals(Response.class) &&
-                method.getParameterTypes()[2].equals(MatchContext.class);
+        Class[] parameterTypes = method.getParameterTypes();
+        return parameterTypes.length == 3 &&
+                parameterTypes[0].equals(Request.class) &&
+                parameterTypes[1].equals(Response.class) &&
+                parameterTypes[2].equals(MatchContext.class);
     }
 
     public Object getInstance() {

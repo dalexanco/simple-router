@@ -75,7 +75,7 @@ public class RouterNodeModelTest {
         // Make the call
         graph.handle(mockRequest, mockResponse);
         // Then check
-        verify(subjectRouter, atLeastOnce()).handle(any(), any(), any());
+        verify(subjectRouter, atLeastOnce()).handle(any(Request.class), any(Response.class), any(MatchContext.class));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class RouterNodeModelTest {
         // Make the call
         graph.handle(mockRequest, mockResponse);
         // Then check
-        verify(subjectRouter, atLeastOnce()).handle(any(), any(), any());
+        verify(subjectRouter, atLeastOnce()).handle(any(Request.class), any(Response.class), any(MatchContext.class));
     }
 
 }

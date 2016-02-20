@@ -134,7 +134,7 @@ public class PathRouteContainerTest {
         paramsContainer.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<MatchContext> argument = ArgumentCaptor.forClass(MatchContext.class);
-        verify(subjectParamsRouter).handle(any(), any(), argument.capture());
+        verify(subjectParamsRouter).handle(any(Request.class), any(Response.class), argument.capture());
 
         Map<String, String> extractedParams = argument.getValue().getRouteParams();
         assertTrue(extractedParams.containsKey("id"));
@@ -147,7 +147,7 @@ public class PathRouteContainerTest {
         multiParamsContainer.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<MatchContext> argument = ArgumentCaptor.forClass(MatchContext.class);
-        verify(subjectMultiParamsRouter).handle(any(), any(), argument.capture());
+        verify(subjectMultiParamsRouter).handle(any(Request.class), any(Response.class), argument.capture());
 
         Map<String, String> extractedParams = argument.getValue().getRouteParams();
         assertTrue(extractedParams.containsKey("category"));

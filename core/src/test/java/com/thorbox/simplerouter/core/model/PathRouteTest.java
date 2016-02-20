@@ -64,7 +64,7 @@ public class PathRouteTest {
         when(mockRequest.getPath()).thenReturn(new PathParser(requestPath));
         new TestContainer(subject).handle(mockRequest, mockResponse);
         ArgumentCaptor<MatchContext> argument = ArgumentCaptor.forClass(MatchContext.class);
-        verify(subject, times(shouleBeHandled ? 1 : 0)).handle(any(), any(), argument.capture());
+        verify(subject, times(shouleBeHandled ? 1 : 0)).handle(any(Request.class), any(Response.class), argument.capture());
         if(shouleBeHandled) {
             assertEquals(shouleBeHandled, argument.getValue().isMatching());
             return argument.getValue();
