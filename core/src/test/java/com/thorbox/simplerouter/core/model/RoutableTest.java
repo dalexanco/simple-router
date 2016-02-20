@@ -1,6 +1,7 @@
 package com.thorbox.simplerouter.core.model;
 
 import com.thorbox.simplerouter.core.model.helper.HttpTestHelper;
+import com.thorbox.simplerouter.core.model.matcher.MatchContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,10 +39,10 @@ public class RoutableTest {
         public void notRoutableMethod(String request, String params) {
         }
 
-        public void routableMethod(Request request, Response response) {
+        public void routableMethod(Request request, Response response, MatchContext context) {
         }
 
-        public void explodeMethod(Request request, Response response) {
+        public void explodeMethod(Request request, Response response, MatchContext context) {
             throw new HeadlessException();
         }
     }
@@ -49,9 +50,9 @@ public class RoutableTest {
     @Before
     public void before() throws NoSuchMethodException, IOException {
         dummyObject = new Dummy();
-        routableMethod = Dummy.class.getMethod("routableMethod", Request.class, Response.class);
+        routableMethod = Dummy.class.getMethod("routableMethod", Request.class, Response.class, MatchContext.class);
         notRoutableMethod = Dummy.class.getMethod("notRoutableMethod", String.class, String.class);
-        explodeMethod = Dummy.class.getMethod("explodeMethod", Request.class, Response.class);
+        explodeMethod = Dummy.class.getMethod("explodeMethod", Request.class, Response.class, MatchContext.class);
 
         mockRequest = HttpTestHelper.mockRequest();
         mockResponse = HttpTestHelper.mockResponse();
@@ -71,15 +72,16 @@ public class RoutableTest {
     @Test
     public void handleRoutableMethod() {
         Routable routable = spy(Routable.from(dummyObject, routableMethod));
-        routable.handle(mockRequest, mockResponse);
-        verify(routable, times(1)).handle(mockRequest, mockResponse);
+        MatchContext matchContext = new MatchContext(true);
+        routable.handle(mockRequest, mockResponse, matchContext);
+        verify(routable, times(1)).handle(mockRequest, mockResponse, matchContext);
     }
 
     @Test
     public void handleFailRoutableMethod() {
         // Create a routable with it
         Routable routable = spy(Routable.from(dummyObject, explodeMethod));
-        routable.handle(mockRequest, mockResponse);
+        routable.handle(mockRequest, mockResponse, new MatchContext(true));
         verify(routable, times(1)).sendSystemError(mockResponse);
         verify(mockResponse).setCode(500);
     }

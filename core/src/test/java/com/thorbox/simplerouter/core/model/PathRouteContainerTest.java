@@ -11,6 +11,7 @@ import org.simpleframework.http.Response;
 import org.simpleframework.http.parse.PathParser;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -160,22 +161,23 @@ public class PathRouteContainerTest {
         when(mockRequest.getPath()).thenReturn(new PathParser("/test/does/not/exist"));
         Routable mockNotFound = Mockito.mock(Routable.class);
         when(mockNotFound.getInstance()).thenReturn(new DummyRoutable());
-        when(mockNotFound.getInstanceMethod()).thenReturn(DummyRoutable.class.getMethod("dummy", Request.class, Response.class));
+        Method dummyMethod = DummyRoutable.class.getMethod("dummy", Request.class, Response.class, MatchContext.class);
+        when(mockNotFound.getInstanceMethod()).thenReturn(dummyMethod);
         subjectSimpleRouter.setNotFoundRoute(new BaseRouteModel(mockNotFound));
 
         simpleContainer.handle(mockRequest, mockResponse);
-        verify(mockNotFound, times(1)).handle(mockRequest, mockResponse);
+        verify(mockNotFound, times(1)).handle(any(Request.class), any(Response.class), any(MatchContext.class));
     }
 
     private void testHandleRoute(PathRouteContainer subject, RouteNodeModel container, String requestPath, boolean shouleBeHandled) {
         when(mockRequest.getPath()).thenReturn(new PathParser(requestPath));
         // Make the call as if it was used as a Container
         container.handle(mockRequest, mockResponse);
-        verify(subject, times(shouleBeHandled ? 1 : 0)).handle(any(), any(), any());
+        verify(subject, times(shouleBeHandled ? 1 : 0)).handle(any(Request.class), any(Response.class), any(MatchContext.class));
     }
 
     private class DummyRoutable {
-        public void dummy(Request request, Response response) {
+        public void dummy(Request request, Response response, MatchContext context) {
 
         }
     }

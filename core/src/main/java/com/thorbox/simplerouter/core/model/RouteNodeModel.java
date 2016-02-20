@@ -33,10 +33,10 @@ public abstract class RouteNodeModel implements Container {
                 return;
             }
         }
-        handleNotFound(request, response);
+        handleNotFound(request, response, currentMatch);
     }
 
-    protected void handleNotFound(Request request, Response response) {
+    protected void handleNotFound(Request request, Response response, MatchContext context) {
         try {
             response.setCode(404);
             response.getPrintStream().println("Not found");

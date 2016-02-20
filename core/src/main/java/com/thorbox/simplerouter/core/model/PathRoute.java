@@ -30,7 +30,7 @@ public class PathRoute extends BaseRouteModel {
         if(!request.getMethod().equals(method)) {
             return new MatchContext(false);
         }
-        Matcher matcher = this.matcher.executePattern(request.getPath().getPath());
+        Matcher matcher = this.matcher.executePattern(matchResult.getRoute());
         boolean isMatching = matcher.matches();
         // If not matching, skip params and subpath extraction
         if(!isMatching) {

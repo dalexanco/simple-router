@@ -27,7 +27,7 @@ public class BaseRouteModelTest {
         mockRequest = HttpTestHelper.mockRequest();
         mockResponse = HttpTestHelper.mockResponse();
 
-        Method dummyRoutableMethod = DummyRouter.class.getMethod("dummyRoutableMethod", Request.class, Response.class);
+        Method dummyRoutableMethod = DummyRouter.class.getMethod("dummyRoutableMethod", Request.class, Response.class, MatchContext.class);
         Routable routable = Routable.from(new DummyRouter(), dummyRoutableMethod);
         subjectRouteModel = spy(new BaseRouteModel(routable));
     }
@@ -36,21 +36,21 @@ public class BaseRouteModelTest {
     public void handleShouldCallRoutable() throws NoSuchMethodException {
         Routable mockRoutable = Mockito.mock(Routable.class);
         when(mockRoutable.getInstance()).thenReturn(new DummyRoutable());
-        when(mockRoutable.getInstanceMethod()).thenReturn(DummyRoutable.class.getMethod("dummy", Request.class, Response.class));
+        when(mockRoutable.getInstanceMethod()).thenReturn(DummyRoutable.class.getMethod("dummy", Request.class, Response.class, MatchContext.class));
         subjectRouteModel = new BaseRouteModel(mockRoutable);
         RouteNodeModel router = new DummyRouter();
         router.add(subjectRouteModel);
         router.handle(mockRequest, mockResponse);
-        verify(mockRoutable, times(1)).handle(any(), any());
+        verify(mockRoutable, times(1)).handle(any(Request.class), any(Response.class), any(MatchContext.class));
     }
 
     private class DummyRoutable {
-        public void dummy(Request req, Response resp) {}
+        public void dummy(Request req, Response resp, MatchContext context) {}
     }
 
     private class DummyRouter extends RouteNodeModel {
 
-        public void dummyRoutableMethod(Request request, Response response) {
+        public void dummyRoutableMethod(Request request, Response response, MatchContext context) {
         }
 
         @Override

@@ -1,8 +1,9 @@
-package com.thorbox.sample.model;
+package com.thorbox.sample;
 
 import com.thorbox.simplerouter.annotation.model.Route;
 import com.thorbox.simplerouter.annotation.model.RouteContainer;
 import com.thorbox.simplerouter.annotation.model.RouteNotFound;
+import com.thorbox.simplerouter.core.model.matcher.MatchContext;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 
@@ -15,7 +16,7 @@ import java.io.IOException;
 public class SampleRouter {
 
     @Route(path = "/ok")
-    public void methodX(Request request, Response response) {
+    public void methodX(Request request, Response response, MatchContext context) {
         try {
             response.setCode(200);
             response.getPrintStream().println("Yeah !");
@@ -25,7 +26,7 @@ public class SampleRouter {
         }
     }
     @Route(path = "/test")
-    public void methodB(Request request, Response response) {
+    public void methodB(Request request, Response response, MatchContext context) {
         try {
             response.setCode(200);
             response.getPrintStream().println("Test !");
@@ -35,8 +36,19 @@ public class SampleRouter {
         }
     }
 
+    @Route(path = "/{id:integer}")
+    public void methodC(Request request, Response response, MatchContext context) {
+        try {
+            response.setCode(200);
+            response.getPrintStream().println("Loaded user #" + context.getRouteParams().get("id"));
+            response.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @RouteNotFound
-    public void methodNotFound(Request request, Response response) {
+    public void methodNotFound(Request request, Response response, MatchContext context) {
         try {
             response.setCode(404);
             response.getPrintStream().println("Aucun user pour ce nom");
