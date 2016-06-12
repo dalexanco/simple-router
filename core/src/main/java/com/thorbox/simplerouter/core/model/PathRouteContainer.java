@@ -1,11 +1,11 @@
 package com.thorbox.simplerouter.core.model;
 
+import com.google.code.regexp.Matcher;
 import com.thorbox.simplerouter.core.model.matcher.MatchContext;
 import com.thorbox.simplerouter.core.model.matcher.PathMatcher;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 
-import java.util.regex.Matcher;
 
 /**
  * Created by david on 09/02/2016.
