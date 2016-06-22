@@ -1,7 +1,8 @@
-package com.thorbox.simplerouter.core.model;
+package com.thorbox.simplerouter.core;
 
-import com.thorbox.simplerouter.core.model.helper.HttpTestHelper;
-import com.thorbox.simplerouter.core.model.matcher.MatchContext;
+import com.thorbox.simplerouter.core.helper.HttpTestHelper;
+import com.thorbox.simplerouter.core.model.MatchContext;
+import com.thorbox.simplerouter.core.model.RouteRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -20,7 +21,7 @@ public class BaseRouteModelTest {
     private Request mockRequest;
     private Response mockResponse;
 
-    private BaseRouteModel subjectRouteModel;
+    private BaseHTTPModel subjectRouteModel;
 
     @Before
     public void before() throws IOException, NoSuchMethodException {
@@ -28,27 +29,27 @@ public class BaseRouteModelTest {
         mockResponse = HttpTestHelper.mockResponse();
 
         Method dummyRoutableMethod = DummyRouter.class.getMethod("dummyRoutableMethod", Request.class, Response.class, MatchContext.class);
-        Routable routable = Routable.from(new DummyRouter(), dummyRoutableMethod);
-        subjectRouteModel = spy(new BaseRouteModel(routable));
+        RouteRef routeRef = RouteRef.from(new DummyRouter(), dummyRoutableMethod);
+        subjectRouteModel = spy(new BaseHTTPModel(routeRef));
     }
 
     @Test
     public void handleShouldCallRoutable() throws NoSuchMethodException {
-        Routable mockRoutable = Mockito.mock(Routable.class);
-        when(mockRoutable.getInstance()).thenReturn(new DummyRoutable());
-        when(mockRoutable.getInstanceMethod()).thenReturn(DummyRoutable.class.getMethod("dummy", Request.class, Response.class, MatchContext.class));
-        subjectRouteModel = new BaseRouteModel(mockRoutable);
-        RouteNodeModel router = new DummyRouter();
+        RouteRef mockRouteRef = Mockito.mock(RouteRef.class);
+        when(mockRouteRef.getInstance()).thenReturn(new DummyRoutable());
+        when(mockRouteRef.getInstanceMethod()).thenReturn(DummyRoutable.class.getMethod("dummy", Request.class, Response.class, MatchContext.class));
+        subjectRouteModel = new BaseHTTPModel(mockRouteRef);
+        HTTPNode router = new DummyRouter();
         router.add(subjectRouteModel);
         router.handle(mockRequest, mockResponse);
-        verify(mockRoutable, times(1)).handle(any(Request.class), any(Response.class), any(MatchContext.class));
+        verify(mockRouteRef, times(1)).handle(any(Request.class), any(Response.class), any(MatchContext.class));
     }
 
     private class DummyRoutable {
         public void dummy(Request req, Response resp, MatchContext context) {}
     }
 
-    private class DummyRouter extends RouteNodeModel {
+    private class DummyRouter extends HTTPNode {
 
         public void dummyRoutableMethod(Request request, Response response, MatchContext context) {
         }

@@ -1,7 +1,7 @@
-package com.thorbox.simplerouter.core.model;
+package com.thorbox.simplerouter.core;
 
-import com.thorbox.simplerouter.core.model.helper.HttpTestHelper;
-import com.thorbox.simplerouter.core.model.matcher.MatchContext;
+import com.thorbox.simplerouter.core.helper.HttpTestHelper;
+import com.thorbox.simplerouter.core.model.MatchContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.simpleframework.http.Request;
@@ -21,7 +21,7 @@ public class RouterNodeModelTest {
 
     private DummyRouter subjectRouter;
 
-    private class DummyRouter extends RouteNodeModel {
+    private class DummyRouter extends HTTPNode {
         private final String name;
         private boolean matchResult;
 
@@ -62,9 +62,9 @@ public class RouterNodeModelTest {
     @Test
     public void testSpecificRouteCatching() {
         // Build a graph
-        RouteNodeModel graph = new DummyRouter("Graph");
-        RouteNodeModel level1 = new DummyRouter("Level 1");
-        RouteNodeModel level2 = new DummyRouter("Level 2");
+        HTTPNode graph = new DummyRouter("Graph");
+        HTTPNode level1 = new DummyRouter("Level 1");
+        HTTPNode level2 = new DummyRouter("Level 2");
         level2.add(new DummyRouter("Level 2 - Node 1", false));
         level2.add(subjectRouter);
         level1.add(new DummyRouter("Level 1 - Node 1", false));
@@ -81,9 +81,9 @@ public class RouterNodeModelTest {
     @Test
     public void testNaturalGraphHandling() {
         // Build a graph
-        RouteNodeModel graph = new DummyRouter("Graph");
-        RouteNodeModel level1 = new DummyRouter("Level 1");
-        RouteNodeModel level2 = new DummyRouter("Level 2");
+        HTTPNode graph = new DummyRouter("Graph");
+        HTTPNode level1 = new DummyRouter("Level 1");
+        HTTPNode level2 = new DummyRouter("Level 2");
         level2.add(subjectRouter);
         level1.add(level2);
         level1.add(new DummyRouter("Level 1 - Node 1"));

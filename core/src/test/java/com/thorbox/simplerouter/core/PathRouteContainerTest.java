@@ -1,7 +1,8 @@
-package com.thorbox.simplerouter.core.model;
+package com.thorbox.simplerouter.core;
 
-import com.thorbox.simplerouter.core.model.helper.HttpTestHelper;
-import com.thorbox.simplerouter.core.model.matcher.MatchContext;
+import com.thorbox.simplerouter.core.helper.HttpTestHelper;
+import com.thorbox.simplerouter.core.model.MatchContext;
+import com.thorbox.simplerouter.core.model.RouteRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -27,24 +28,24 @@ public class PathRouteContainerTest {
     private Request mockRequest;
     private Response mockResponse;
 
-    private PathRouteContainer subjectSimpleRouter;
-    private PathRouteContainer subjectParamsRouter;
-    private PathRouteContainer subjectIntParamsRouter;
-    private PathRouteContainer subjectMultiParamsRouter;
-    private RouteNodeModel simpleContainer;
-    private RouteNodeModel paramsContainer;
-    private RouteNodeModel intParamsContainer;
-    private RouteNodeModel multiParamsContainer;
+    private PathHTTPContainer subjectSimpleRouter;
+    private PathHTTPContainer subjectParamsRouter;
+    private PathHTTPContainer subjectIntParamsRouter;
+    private PathHTTPContainer subjectMultiParamsRouter;
+    private HTTPNode simpleContainer;
+    private HTTPNode paramsContainer;
+    private HTTPNode intParamsContainer;
+    private HTTPNode multiParamsContainer;
 
     @Before
     public void before() throws IOException {
-        subjectSimpleRouter = spy(new PathRouteContainer("/test"));
-        subjectParamsRouter = spy(new PathRouteContainer("/dummy/list/{id}"));
-        subjectIntParamsRouter = spy(new PathRouteContainer("/dummy/list/{id:integer}"));
-        subjectMultiParamsRouter = spy(new PathRouteContainer("/category/{category}/details/{id}"));
+        subjectSimpleRouter = spy(new PathHTTPContainer("/test"));
+        subjectParamsRouter = spy(new PathHTTPContainer("/dummy/list/{id}"));
+        subjectIntParamsRouter = spy(new PathHTTPContainer("/dummy/list/{id:integer}"));
+        subjectMultiParamsRouter = spy(new PathHTTPContainer("/category/{category}/details/{id}"));
 
         // Prepare simple router
-        simpleContainer = new RouteNodeModel() {
+        simpleContainer = new HTTPNode() {
             @Override
             public MatchContext match(Request request, Response response, MatchContext parentMatch) {
                 return new MatchContext(request.getPath().getPath(), true);
@@ -53,7 +54,7 @@ public class PathRouteContainerTest {
         simpleContainer.add(subjectSimpleRouter);
 
         // Prepare params router
-        paramsContainer = new RouteNodeModel() {
+        paramsContainer = new HTTPNode() {
             @Override
             public MatchContext match(Request request, Response response, MatchContext parentMatch) {
                 return new MatchContext(request.getPath().getPath(), true);
@@ -62,7 +63,7 @@ public class PathRouteContainerTest {
         paramsContainer.add(subjectParamsRouter);
 
         // Prepare int params router
-        intParamsContainer = new RouteNodeModel() {
+        intParamsContainer = new HTTPNode() {
             @Override
             public MatchContext match(Request request, Response response, MatchContext parentMatch) {
                 return new MatchContext(request.getPath().getPath(), true);
@@ -71,7 +72,7 @@ public class PathRouteContainerTest {
         intParamsContainer.add(subjectIntParamsRouter);
 
         // Prepare multi-params router
-        multiParamsContainer = new RouteNodeModel() {
+        multiParamsContainer = new HTTPNode() {
             @Override
             public MatchContext match(Request request, Response response, MatchContext parentMatch) {
                 return new MatchContext(request.getPath().getPath(), true);
@@ -159,17 +160,17 @@ public class PathRouteContainerTest {
     @Test
     public void shouldCallNoRouteFound() throws NoSuchMethodException {
         when(mockRequest.getPath()).thenReturn(new PathParser("/test/does/not/exist"));
-        Routable mockNotFound = Mockito.mock(Routable.class);
+        RouteRef mockNotFound = Mockito.mock(RouteRef.class);
         when(mockNotFound.getInstance()).thenReturn(new DummyRoutable());
         Method dummyMethod = DummyRoutable.class.getMethod("dummy", Request.class, Response.class, MatchContext.class);
         when(mockNotFound.getInstanceMethod()).thenReturn(dummyMethod);
-        subjectSimpleRouter.setNotFoundRoute(new BaseRouteModel(mockNotFound));
+        subjectSimpleRouter.setNotFoundRoute(new BaseHTTPModel(mockNotFound));
 
         simpleContainer.handle(mockRequest, mockResponse);
         verify(mockNotFound, times(1)).handle(any(Request.class), any(Response.class), any(MatchContext.class));
     }
 
-    private void testHandleRoute(PathRouteContainer subject, RouteNodeModel container, String requestPath, boolean shouleBeHandled) {
+    private void testHandleRoute(PathHTTPContainer subject, HTTPNode container, String requestPath, boolean shouleBeHandled) {
         when(mockRequest.getPath()).thenReturn(new PathParser(requestPath));
         // Make the call as if it was used as a Container
         container.handle(mockRequest, mockResponse);

@@ -1,4 +1,4 @@
-package com.thorbox.simplerouter.core.model.helper;
+package com.thorbox.simplerouter.core.helper;
 
 import org.mockito.Mockito;
 import org.simpleframework.http.Request;

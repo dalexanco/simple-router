@@ -1,7 +1,8 @@
-package com.thorbox.simplerouter.core.model;
+package com.thorbox.simplerouter.core;
 
-import com.thorbox.simplerouter.core.model.helper.HttpTestHelper;
-import com.thorbox.simplerouter.core.model.matcher.MatchContext;
+import com.thorbox.simplerouter.core.helper.HttpTestHelper;
+import com.thorbox.simplerouter.core.model.MatchContext;
+import com.thorbox.simplerouter.core.model.RouteRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,15 +26,15 @@ public class PathRouteTest {
     private Request mockRequest;
     private Response mockResponse;
 
-    private PathRoute subjectSimpleRoute;
-    private PathRoute subjectParamsRoute;
+    private PathHTTP subjectSimpleRoute;
+    private PathHTTP subjectParamsRoute;
 
     @Before
     public void before() throws NoSuchMethodException, IOException {
         Method method = TestRoutable.class.getMethod("test", Request.class, Response.class, MatchContext.class);
-        Routable routable = new Routable(new TestRoutable(), method);
-        subjectSimpleRoute = spy(new PathRoute("/test/v1", "GET", routable));
-        subjectParamsRoute = spy(new PathRoute("/category/{category}", "GET", routable));
+        RouteRef routeRef = new RouteRef(new TestRoutable(), method);
+        subjectSimpleRoute = spy(new PathHTTP("/test/v1", "GET", routeRef));
+        subjectParamsRoute = spy(new PathHTTP("/category/{category}", "GET", routeRef));
 
         mockRequest = HttpTestHelper.mockRequest();
         mockResponse = HttpTestHelper.mockResponse();
@@ -60,7 +61,7 @@ public class PathRouteTest {
         testHandleRoute(subjectSimpleRoute, "/test/v1", false);
     }
 
-    private MatchContext testHandleRoute(PathRoute subject, String requestPath, boolean shouleBeHandled) {
+    private MatchContext testHandleRoute(PathHTTP subject, String requestPath, boolean shouleBeHandled) {
         when(mockRequest.getPath()).thenReturn(new PathParser(requestPath));
         new TestContainer(subject).handle(mockRequest, mockResponse);
         ArgumentCaptor<MatchContext> argument = ArgumentCaptor.forClass(MatchContext.class);
@@ -78,8 +79,8 @@ public class PathRouteTest {
         }
     }
 
-    public class TestContainer extends RouteNodeModel {
-        public TestContainer(RouteNodeModel subject) {
+    public class TestContainer extends HTTPNode {
+        public TestContainer(HTTPNode subject) {
             super();
             add(subject);
         }

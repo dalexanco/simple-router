@@ -1,4 +1,4 @@
-package com.thorbox.simplerouter.core.model.matcher;
+package com.thorbox.simplerouter.core.model;
 
 import java.util.ArrayList;
 import java.util.List;

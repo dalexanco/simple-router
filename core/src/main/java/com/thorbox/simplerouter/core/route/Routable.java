@@ -1,34 +1,27 @@
-package com.thorbox.simplerouter.core.model;
+package com.thorbox.simplerouter.core.route;
 
 import com.google.code.regexp.Matcher;
-import com.thorbox.simplerouter.core.model.matcher.MatchContext;
-import com.thorbox.simplerouter.core.model.matcher.PathMatcher;
+import com.thorbox.simplerouter.core.HTTPNode;
+import com.thorbox.simplerouter.core.model.MatchContext;
+import com.thorbox.simplerouter.core.model.PathMatcher;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 
 /**
- * A PathRoute is a Route defined by a method and a path
- * The @path can contains route parameters
- * Created by david on 09/02/2016.
+ * Created by david on 21/06/16.
  */
-public class PathRoute extends BaseRouteModel {
+public abstract class Routable extends HTTPNode {
 
     protected final String path;
-    protected final String method;
     private PathMatcher matcher;
 
-    public PathRoute(String path, String method, Routable routable) {
-        super(routable);
+    public Routable(String path) {
+        super();
         this.path = path;
-        this.method = method;
         this.matcher = new PathMatcher(path);
     }
 
-    @Override
     public MatchContext match(Request request, Response response, MatchContext matchResult) {
-        if(!request.getMethod().equals(method)) {
-            return new MatchContext(false);
-        }
         Matcher matcher = this.matcher.executePattern(matchResult.getRoute());
         boolean isMatching = matcher.matches();
         // If not matching, skip params and subpath extraction
