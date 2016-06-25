@@ -1,41 +1,45 @@
 package com.thorbox.simplerouter.annotation;
 
-import com.thorbox.simplerouter.core.*;
 import com.thorbox.simplerouter.annotation.model.Route;
-import com.thorbox.simplerouter.annotation.model.RouteContainer;
+import com.thorbox.simplerouter.annotation.model.Router;
 import com.thorbox.simplerouter.annotation.model.RouteNotFound;
-import com.thorbox.simplerouter.core.model.MatchContext;
-import com.thorbox.simplerouter.core.model.RouteRef;
-import org.simpleframework.http.Request;
-import org.simpleframework.http.Response;
+import com.thorbox.simplerouter.core.HTTPNode;
+import com.thorbox.simplerouter.core.route.RouteHandler;
+import com.thorbox.simplerouter.core.route.RouteRef;
 
 import java.lang.reflect.Method;
 
 /**
  * Created by david on 07/02/2016.
  */
-public class AnnotationRouter extends HTTPNode {
+public class AnnotationRouter extends com.thorbox.simplerouter.core.route.Router {
 
-    public void add(Object object) {
-        RouteContainer routerAnnotation = object.getClass().getAnnotation(RouteContainer.class);
-        PathHTTPContainer pathRouteContainer = new PathHTTPContainer(routerAnnotation.path());
-        for(Method method : object.getClass().getMethods()) {
+    public AnnotationRouter(String path) {
+        super(path);
+
+        // Look for routes and add as new RouteNodes
+        for(Method method : getClass().getMethods()) {
             RouteRef routeRef;
             Route routeAnnotation = method.getAnnotation(Route.class);
             if(routeAnnotation != null) {
-                routeRef = RouteRef.from(object, method);
-                pathRouteContainer.add(new PathHTTP(routeAnnotation.path(), routeAnnotation.method(), routeRef));
+                routeRef = RouteRef.from(this, method);
+                this.add(new com.thorbox.simplerouter.core.route.Route(routeAnnotation.path(), routeAnnotation.method(), routeRef));
             } else if(method.getAnnotation(RouteNotFound.class) != null) {
-                routeRef = RouteRef.from(object, method);
-                pathRouteContainer.setNotFoundRoute(new BaseHTTPModel(routeRef));
+                routeRef = RouteRef.from(this, method);
+                this.setNotFoundNode(new RouteHandler("", routeRef));
             }
         }
-        add(pathRouteContainer);
     }
 
-    @Override
-    public MatchContext match(Request request, Response response, MatchContext matchResult) {
-        return matchResult;
+    public AnnotationRouter() {
+        this("");
+
+        // If found a Router annotation, use it as main path
+        Router routerAnnotation = getClass().getAnnotation(Router.class);
+        if(routerAnnotation != null) {
+            this.setupPath(routerAnnotation.path());
+        }
     }
+
 
 }

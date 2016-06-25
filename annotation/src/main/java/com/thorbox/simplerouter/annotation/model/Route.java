@@ -14,5 +14,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Route {
     public String method() default Method.GET;
-    public String path();
+    public String path() default "";
 }

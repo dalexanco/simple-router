@@ -1,6 +1,7 @@
 package com.thorbox.sample;
 
 import com.thorbox.simplerouter.annotation.AnnotationRouter;
+import com.thorbox.simplerouter.core.HTTPServer;
 import org.simpleframework.http.core.ContainerServer;
 import org.simpleframework.transport.Server;
 import org.simpleframework.transport.connect.Connection;
@@ -18,10 +19,10 @@ public class Main {
     public static void main(String[] args) {
 
         try {
-            AnnotationRouter router = new AnnotationRouter();
-            router.add(new SampleRouter());
+            HTTPServer restServer = new HTTPServer();
+            restServer.add(new SampleRouter());
 
-            Server server = new ContainerServer(router);
+            Server server = new ContainerServer(restServer);
             Connection connection = new SocketConnection(server);
             SocketAddress address = new InetSocketAddress(2222);
             connection.connect(address);

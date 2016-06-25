@@ -1,6 +1,7 @@
 package com.thorbox.simplerouter.core;
 
 import com.thorbox.simplerouter.core.helper.HttpTestHelper;
+import com.thorbox.simplerouter.core.model.HTTPSession;
 import com.thorbox.simplerouter.core.model.MatchContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,14 +37,15 @@ public class RouterNodeModelTest {
         }
 
         @Override
-        public MatchContext match(Request request, Response response, MatchContext lastMatch) {
-            return new MatchContext(matchResult);
+        public HTTPSession match(HTTPSession session) {
+            session.context = new MatchContext(matchResult);
+            return session;
         }
 
         @Override
-        public void handle(Request request, Response response, MatchContext currentPath) {
+        public void handle(HTTPSession session) {
             System.out.println("Handle : " + this.name);
-            super.handle(request, response, currentPath);
+            super.handle(session);
         }
 
         public void setMatchResult(boolean matchResult) {
@@ -75,7 +77,7 @@ public class RouterNodeModelTest {
         // Make the call
         graph.handle(mockRequest, mockResponse);
         // Then check
-        verify(subjectRouter, atLeastOnce()).handle(any(Request.class), any(Response.class), any(MatchContext.class));
+        verify(subjectRouter, atLeastOnce()).handle(any(HTTPSession.class));
     }
 
     @Test
@@ -93,7 +95,7 @@ public class RouterNodeModelTest {
         // Make the call
         graph.handle(mockRequest, mockResponse);
         // Then check
-        verify(subjectRouter, atLeastOnce()).handle(any(Request.class), any(Response.class), any(MatchContext.class));
+        verify(subjectRouter, atLeastOnce()).handle(any(HTTPSession.class));
     }
 
 }

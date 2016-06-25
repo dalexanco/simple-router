@@ -1,6 +1,6 @@
-package com.thorbox.simplerouter.core.model;
+package com.thorbox.simplerouter.core.route;
 
-import org.simpleframework.http.Request;
+import com.thorbox.simplerouter.core.model.HTTPSession;
 import org.simpleframework.http.Response;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class RouteRef {
     public static RouteRef from(Object instance, Method instanceMethod) {
         if (!isMethodLookLikeARoute(instanceMethod)) {
             String errorMessage = String.format(
-                    "The method %s.%s does not look like a route handler (should take 3 parameters : Request, Response, MatchContext)",
+                    "The method %s.%s does not look like a route handler (should take 1 parameters : HTTPSession and return HTTPSession)",
                     new Object[]{instance.getClass().getSimpleName(), instanceMethod.getName()}
             );
             throw new IllegalAccessError(errorMessage);
@@ -62,7 +62,7 @@ public class RouteRef {
         Class returnType = method.getReturnType();
         return parameterTypes.length == 1 &&
                 parameterTypes[0].equals(HTTPSession.class) &&
-                returnType.equals(Void.class);
+                returnType.equals(HTTPSession.class);
     }
 
     public Object getInstance() {

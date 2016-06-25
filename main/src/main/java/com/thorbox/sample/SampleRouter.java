@@ -1,7 +1,8 @@
 package com.thorbox.sample;
 
+import com.thorbox.simplerouter.annotation.AnnotationRouter;
 import com.thorbox.simplerouter.annotation.model.Route;
-import com.thorbox.simplerouter.annotation.model.RouteContainer;
+import com.thorbox.simplerouter.annotation.model.Router;
 import com.thorbox.simplerouter.annotation.model.RouteNotFound;
 import com.thorbox.simplerouter.core.model.MatchContext;
 import org.simpleframework.http.Request;
@@ -12,8 +13,8 @@ import java.io.IOException;
 /**
  * Created by david on 05/02/2016.
  */
-@RouteContainer(path = "/api/user")
-public class SampleRouter {
+@Router(path = "/api/user")
+public class SampleRouter extends AnnotationRouter {
 
     @Route(path = "/ok")
     public void methodX(Request request, Response response, MatchContext context) {

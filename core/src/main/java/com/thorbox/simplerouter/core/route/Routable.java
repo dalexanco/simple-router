@@ -2,42 +2,48 @@ package com.thorbox.simplerouter.core.route;
 
 import com.google.code.regexp.Matcher;
 import com.thorbox.simplerouter.core.HTTPNode;
+import com.thorbox.simplerouter.core.model.HTTPSession;
 import com.thorbox.simplerouter.core.model.MatchContext;
 import com.thorbox.simplerouter.core.model.PathMatcher;
-import org.simpleframework.http.Request;
-import org.simpleframework.http.Response;
 
 /**
  * Created by david on 21/06/16.
  */
 public abstract class Routable extends HTTPNode {
 
-    protected final String path;
+    protected String path;
     private PathMatcher matcher;
 
     public Routable(String path) {
         super();
+        setupPath(path);
+    }
+
+    protected void setupPath(String path) {
         this.path = path;
         this.matcher = new PathMatcher(path);
     }
 
-    public MatchContext match(Request request, Response response, MatchContext matchResult) {
-        Matcher matcher = this.matcher.executePattern(matchResult.getRoute());
+    @Override
+    public HTTPSession match(HTTPSession session) {
+        Matcher matcher = this.matcher.executePattern(session.context.getRoute());
         boolean isMatching = matcher.matches();
         // If not matching, skip params and subpath extraction
         if(!isMatching) {
-            return new MatchContext(false);
+            session.context = new MatchContext(false);
+            return session;
         }
         // Prepare match context
         String subPath = matcher.group(matcher.groupCount()-1);
-        MatchContext context = new MatchContext(subPath, isMatching);
+        session.context = new MatchContext(subPath, isMatching);
         // if found params, add them to context
         if(matcher.groupCount() > 1) {
             for(String paramKey : this.matcher.getParamKeys()) {
                 String paramValue = matcher.group(paramKey);
-                context.getRouteParams().put(paramKey, paramValue);
+                session.context.getRouteParams().put(paramKey, paramValue);
             }
         }
-        return context;
+        return session;
     }
+
 }

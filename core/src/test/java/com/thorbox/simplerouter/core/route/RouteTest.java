@@ -1,8 +1,9 @@
-package com.thorbox.simplerouter.core;
+package com.thorbox.simplerouter.core.route;
 
+import com.thorbox.simplerouter.core.HTTPNode;
 import com.thorbox.simplerouter.core.helper.HttpTestHelper;
+import com.thorbox.simplerouter.core.model.HTTPSession;
 import com.thorbox.simplerouter.core.model.MatchContext;
-import com.thorbox.simplerouter.core.model.RouteRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -21,20 +22,20 @@ import static org.mockito.Mockito.*;
 /**
  * Created by david on 15/02/2016.
  */
-public class PathRouteTest {
+public class RouteTest {
 
     private Request mockRequest;
     private Response mockResponse;
 
-    private PathHTTP subjectSimpleRoute;
-    private PathHTTP subjectParamsRoute;
+    private Route subjectSimpleRoute;
+    private Route subjectParamsRoute;
 
     @Before
     public void before() throws NoSuchMethodException, IOException {
         Method method = TestRoutable.class.getMethod("test", Request.class, Response.class, MatchContext.class);
         RouteRef routeRef = new RouteRef(new TestRoutable(), method);
-        subjectSimpleRoute = spy(new PathHTTP("/test/v1", "GET", routeRef));
-        subjectParamsRoute = spy(new PathHTTP("/category/{category}", "GET", routeRef));
+        subjectSimpleRoute = spy(new Route("/test/v1", "GET", routeRef));
+        subjectParamsRoute = spy(new Route("/category/{category}", "GET", routeRef));
 
         mockRequest = HttpTestHelper.mockRequest();
         mockResponse = HttpTestHelper.mockResponse();
@@ -49,10 +50,10 @@ public class PathRouteTest {
     @Test
     public void handleParamsRoute() {
         when(mockRequest.getMethod()).thenReturn("GET");
-        MatchContext matchContext = testHandleRoute(subjectParamsRoute, "/category/dog", true);
-        assertEquals(1, matchContext.getRouteParams().keySet().size());
-        assertTrue(matchContext.getRouteParams().containsKey("category"));
-        assertEquals("dog", matchContext.getRouteParams().get("category"));
+        HTTPSession session = testHandleRoute(subjectParamsRoute, "/category/dog", true);
+        assertEquals(1, session.context.getRouteParams().keySet().size());
+        assertTrue(session.context.getRouteParams().containsKey("category"));
+        assertEquals("dog", session.context.getRouteParams().get("category"));
     }
 
     @Test
@@ -61,13 +62,13 @@ public class PathRouteTest {
         testHandleRoute(subjectSimpleRoute, "/test/v1", false);
     }
 
-    private MatchContext testHandleRoute(PathHTTP subject, String requestPath, boolean shouleBeHandled) {
+    private HTTPSession testHandleRoute(Route subject, String requestPath, boolean shouleBeHandled) {
         when(mockRequest.getPath()).thenReturn(new PathParser(requestPath));
         new TestContainer(subject).handle(mockRequest, mockResponse);
-        ArgumentCaptor<MatchContext> argument = ArgumentCaptor.forClass(MatchContext.class);
-        verify(subject, times(shouleBeHandled ? 1 : 0)).handle(any(Request.class), any(Response.class), argument.capture());
+        ArgumentCaptor<HTTPSession> argument = ArgumentCaptor.forClass(HTTPSession.class);
+        verify(subject, times(shouleBeHandled ? 1 : 0)).handle(argument.capture());
         if(shouleBeHandled) {
-            assertEquals(shouleBeHandled, argument.getValue().isMatching());
+            assertEquals(shouleBeHandled, argument.getValue().context.isMatching());
             return argument.getValue();
         }
         return null;
@@ -86,8 +87,9 @@ public class PathRouteTest {
         }
 
         @Override
-        public MatchContext match(Request request, Response response, MatchContext parentMatch) {
-            return new MatchContext(request.getPath().getPath(), true);
+        public HTTPSession match(HTTPSession session) {
+            session.context = new MatchContext(session.request.getPath().getPath(), true);
+            return session;
         }
     }
 }

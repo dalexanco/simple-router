@@ -1,18 +1,17 @@
-package com.thorbox.simplerouter.core;
+package com.thorbox.simplerouter.core.route;
 
+import com.thorbox.simplerouter.core.HTTPNode;
 import com.thorbox.simplerouter.core.helper.HttpTestHelper;
+import com.thorbox.simplerouter.core.model.HTTPSession;
 import com.thorbox.simplerouter.core.model.MatchContext;
-import com.thorbox.simplerouter.core.model.RouteRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.parse.PathParser;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -23,15 +22,15 @@ import static org.mockito.Mockito.*;
 /**
  * Created by david on 12/02/2016.
  */
-public class PathRouteContainerTest {
+public class RouterTest {
 
     private Request mockRequest;
     private Response mockResponse;
 
-    private PathHTTPContainer subjectSimpleRouter;
-    private PathHTTPContainer subjectParamsRouter;
-    private PathHTTPContainer subjectIntParamsRouter;
-    private PathHTTPContainer subjectMultiParamsRouter;
+    private Router subjectSimpleRouter;
+    private Router subjectParamsRouter;
+    private Router subjectIntParamsRouter;
+    private Router subjectMultiParamsRouter;
     private HTTPNode simpleContainer;
     private HTTPNode paramsContainer;
     private HTTPNode intParamsContainer;
@@ -39,45 +38,25 @@ public class PathRouteContainerTest {
 
     @Before
     public void before() throws IOException {
-        subjectSimpleRouter = spy(new PathHTTPContainer("/test"));
-        subjectParamsRouter = spy(new PathHTTPContainer("/dummy/list/{id}"));
-        subjectIntParamsRouter = spy(new PathHTTPContainer("/dummy/list/{id:integer}"));
-        subjectMultiParamsRouter = spy(new PathHTTPContainer("/category/{category}/details/{id}"));
+        subjectSimpleRouter = spy(new Router("/test"));
+        subjectParamsRouter = spy(new Router("/dummy/list/{id}"));
+        subjectIntParamsRouter = spy(new Router("/dummy/list/{id:integer}"));
+        subjectMultiParamsRouter = spy(new Router("/category/{category}/details/{id}"));
 
         // Prepare simple router
-        simpleContainer = new HTTPNode() {
-            @Override
-            public MatchContext match(Request request, Response response, MatchContext parentMatch) {
-                return new MatchContext(request.getPath().getPath(), true);
-            }
-        };
+        simpleContainer = new DummyNode();
         simpleContainer.add(subjectSimpleRouter);
 
         // Prepare params router
-        paramsContainer = new HTTPNode() {
-            @Override
-            public MatchContext match(Request request, Response response, MatchContext parentMatch) {
-                return new MatchContext(request.getPath().getPath(), true);
-            }
-        };
+        paramsContainer = new DummyNode();
         paramsContainer.add(subjectParamsRouter);
 
         // Prepare int params router
-        intParamsContainer = new HTTPNode() {
-            @Override
-            public MatchContext match(Request request, Response response, MatchContext parentMatch) {
-                return new MatchContext(request.getPath().getPath(), true);
-            }
-        };
+        intParamsContainer = new DummyNode();
         intParamsContainer.add(subjectIntParamsRouter);
 
         // Prepare multi-params router
-        multiParamsContainer = new HTTPNode() {
-            @Override
-            public MatchContext match(Request request, Response response, MatchContext parentMatch) {
-                return new MatchContext(request.getPath().getPath(), true);
-            }
-        };
+        multiParamsContainer = new DummyNode();
         multiParamsContainer.add(subjectMultiParamsRouter);
 
         mockRequest = HttpTestHelper.mockRequest();
@@ -134,10 +113,10 @@ public class PathRouteContainerTest {
         when(mockRequest.getPath()).thenReturn(new PathParser("/dummy/list/123"));
         paramsContainer.handle(mockRequest, mockResponse);
 
-        ArgumentCaptor<MatchContext> argument = ArgumentCaptor.forClass(MatchContext.class);
-        verify(subjectParamsRouter).handle(any(Request.class), any(Response.class), argument.capture());
+        ArgumentCaptor<HTTPSession> argument = ArgumentCaptor.forClass(HTTPSession.class);
+        verify(subjectParamsRouter).handle(argument.capture());
 
-        Map<String, String> extractedParams = argument.getValue().getRouteParams();
+        Map<String, String> extractedParams = argument.getValue().context.getRouteParams();
         assertTrue(extractedParams.containsKey("id"));
         assertEquals("123", extractedParams.get("id"));
     }
@@ -147,39 +126,28 @@ public class PathRouteContainerTest {
         when(mockRequest.getPath()).thenReturn(new PathParser("/category/tips/details/123"));
         multiParamsContainer.handle(mockRequest, mockResponse);
 
-        ArgumentCaptor<MatchContext> argument = ArgumentCaptor.forClass(MatchContext.class);
-        verify(subjectMultiParamsRouter).handle(any(Request.class), any(Response.class), argument.capture());
+        ArgumentCaptor<HTTPSession> argument = ArgumentCaptor.forClass(HTTPSession.class);
+        verify(subjectMultiParamsRouter).handle(argument.capture());
 
-        Map<String, String> extractedParams = argument.getValue().getRouteParams();
+        Map<String, String> extractedParams = argument.getValue().context.getRouteParams();
         assertTrue(extractedParams.containsKey("category"));
         assertEquals("tips", extractedParams.get("category"));
         assertTrue(extractedParams.containsKey("id"));
         assertEquals("123", extractedParams.get("id"));
     }
 
-    @Test
-    public void shouldCallNoRouteFound() throws NoSuchMethodException {
-        when(mockRequest.getPath()).thenReturn(new PathParser("/test/does/not/exist"));
-        RouteRef mockNotFound = Mockito.mock(RouteRef.class);
-        when(mockNotFound.getInstance()).thenReturn(new DummyRoutable());
-        Method dummyMethod = DummyRoutable.class.getMethod("dummy", Request.class, Response.class, MatchContext.class);
-        when(mockNotFound.getInstanceMethod()).thenReturn(dummyMethod);
-        subjectSimpleRouter.setNotFoundRoute(new BaseHTTPModel(mockNotFound));
 
-        simpleContainer.handle(mockRequest, mockResponse);
-        verify(mockNotFound, times(1)).handle(any(Request.class), any(Response.class), any(MatchContext.class));
-    }
-
-    private void testHandleRoute(PathHTTPContainer subject, HTTPNode container, String requestPath, boolean shouleBeHandled) {
+    private void testHandleRoute(Router subject, HTTPNode container, String requestPath, boolean shouleBeHandled) {
         when(mockRequest.getPath()).thenReturn(new PathParser(requestPath));
         // Make the call as if it was used as a Container
         container.handle(mockRequest, mockResponse);
-        verify(subject, times(shouleBeHandled ? 1 : 0)).handle(any(Request.class), any(Response.class), any(MatchContext.class));
+        verify(subject, times(shouleBeHandled ? 1 : 0)).handle(any(HTTPSession.class));
     }
 
-    private class DummyRoutable {
-        public void dummy(Request request, Response response, MatchContext context) {
-
+    private class DummyNode extends HTTPNode {
+        public HTTPSession match(HTTPSession session) {
+            session.context = new MatchContext(session.request.getPath().getPath(), true);
+            return session;
         }
     }
 }
