@@ -18,7 +18,7 @@ public class PathMatcher {
     private final static String PATH_PATTERN_INTEGER = "[0-9]+";
     private final static String PATH_PATTERN_STRING = "[a-zA-Z_0-9]+";
     private final static String PATH_PATTERN_PREFIX = "^";
-    private final static String PATH_PATTERN_SUFFIX = "(.*)";
+    private final static String PATH_PATTERN_SUFFIX = "(?<_subpath>.*)";
 
     // Instance pattern
     private final String path;
@@ -47,6 +47,10 @@ public class PathMatcher {
         }
         m.appendTail(sb);
         this.pathRegex = sb.toString();
+    }
+
+    public String subpath(Matcher matcher) {
+        return matcher.group("_subpath");
     }
 
     public List<String> getParamKeys() {

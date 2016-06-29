@@ -23,7 +23,7 @@ public class RouteRef {
     public static RouteRef from(Object instance, Method instanceMethod) {
         if (!isMethodLookLikeARoute(instanceMethod)) {
             String errorMessage = String.format(
-                    "The method %s.%s does not look like a route handler (should take 1 parameters : HTTPSession and return HTTPSession)",
+                    "The method %s.%s does not look like a route handler (should take 1 parameters : HTTPSession)",
                     new Object[]{instance.getClass().getSimpleName(), instanceMethod.getName()}
             );
             throw new IllegalAccessError(errorMessage);
@@ -59,10 +59,8 @@ public class RouteRef {
      */
     private static boolean isMethodLookLikeARoute(Method method) {
         Class[] parameterTypes = method.getParameterTypes();
-        Class returnType = method.getReturnType();
         return parameterTypes.length == 1 &&
-                parameterTypes[0].equals(HTTPSession.class) &&
-                returnType.equals(HTTPSession.class);
+                parameterTypes[0].equals(HTTPSession.class);
     }
 
     public Object getInstance() {

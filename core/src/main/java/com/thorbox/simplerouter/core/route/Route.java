@@ -24,4 +24,7 @@ public class Route extends RouteHandler {
         return super.match(session);
     }
 
+    @Override
+    protected void afterHandle(HTTPSession session) {
+    }
 }

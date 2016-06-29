@@ -30,11 +30,12 @@ public abstract class Routable extends HTTPNode {
         boolean isMatching = matcher.matches();
         // If not matching, skip params and subpath extraction
         if(!isMatching) {
-            session.context = new MatchContext(false);
-            return session;
+            MatchContext wrongContext = new MatchContext(false);
+            HTTPSession wrongSession = new HTTPSession(session.request, session.response, wrongContext);
+            return wrongSession;
         }
         // Prepare match context
-        String subPath = matcher.group(matcher.groupCount()-1);
+        String subPath = this.matcher.subpath(matcher);
         session.context = new MatchContext(subPath, isMatching);
         // if found params, add them to context
         if(matcher.groupCount() > 1) {

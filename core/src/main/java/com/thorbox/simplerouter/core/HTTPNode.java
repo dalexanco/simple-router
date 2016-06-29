@@ -51,9 +51,16 @@ public abstract class HTTPNode implements Container {
                 return;
             }
         }
-        // Try to call not found
-        if (!currentSession.response.isCommitted() && notFoundNode != null) {
-            notFoundNode.handle(parentSession);
+        afterHandle(parentSession);
+    }
+
+    /**
+     * Try to call not found
+     * @param session
+     */
+    protected void afterHandle(HTTPSession session) {
+        if (notFoundNode != null) {
+            notFoundNode.handle(session);
         }
     }
 

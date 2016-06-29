@@ -4,6 +4,7 @@ import com.thorbox.simplerouter.annotation.AnnotationRouter;
 import com.thorbox.simplerouter.annotation.model.Route;
 import com.thorbox.simplerouter.annotation.model.Router;
 import com.thorbox.simplerouter.annotation.model.RouteNotFound;
+import com.thorbox.simplerouter.core.model.HTTPSession;
 import com.thorbox.simplerouter.core.model.MatchContext;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
@@ -17,43 +18,46 @@ import java.io.IOException;
 public class SampleRouter extends AnnotationRouter {
 
     @Route(path = "/ok")
-    public void methodX(Request request, Response response, MatchContext context) {
+    public void methodX(HTTPSession session) {
         try {
-            response.setCode(200);
-            response.getPrintStream().println("Yeah !");
-            response.close();
+            session.response.setCode(200);
+            session.response.getPrintStream().println("Yeah !");
+            session.response.close();
+            session.response.commit();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     @Route(path = "/test")
-    public void methodB(Request request, Response response, MatchContext context) {
+    public void methodB(HTTPSession session) {
         try {
-            response.setCode(200);
-            response.getPrintStream().println("Test !");
-            response.close();
+            session.response.setCode(200);
+            session.response.getPrintStream().println("Test !");
+            session.response.close();
+            session.response.commit();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Route(path = "/{id:integer}")
-    public void methodC(Request request, Response response, MatchContext context) {
+    public void methodC(HTTPSession session) {
         try {
-            response.setCode(200);
-            response.getPrintStream().println("Loaded user #" + context.getRouteParams().get("id"));
-            response.close();
+            session.response.setCode(200);
+            session.response.getPrintStream().println("Loaded user #" + session.context.getRouteParams().get("id"));
+            session.response.close();
+            session.response.commit();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @RouteNotFound
-    public void methodNotFound(Request request, Response response, MatchContext context) {
+    public void methodNotFound(HTTPSession session) {
         try {
-            response.setCode(404);
-            response.getPrintStream().println("Aucun user pour ce nom");
-            response.close();
+            session.response.setCode(404);
+            session.response.getPrintStream().println("Aucun user pour ce nom");
+            session.response.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
