@@ -1,5 +1,5 @@
 group 'com.thorbox'
-version '1.0-SNAPSHOT'
+version '0.0.6-alpha'
 
 apply plugin: 'java'
 
