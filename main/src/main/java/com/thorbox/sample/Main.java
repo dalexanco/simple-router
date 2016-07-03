@@ -1,7 +1,8 @@
 package com.thorbox.sample;
 
-import com.thorbox.simplerouter.annotation.AnnotationRouter;
+import com.thorbox.simplerouter.core.HTTPMiddleware;
 import com.thorbox.simplerouter.core.HTTPServer;
+import com.thorbox.simplerouter.core.model.HTTPSession;
 import org.simpleframework.http.core.ContainerServer;
 import org.simpleframework.transport.Server;
 import org.simpleframework.transport.connect.Connection;
@@ -20,6 +21,20 @@ public class Main {
 
         try {
             HTTPServer restServer = new HTTPServer();
+            restServer.middleware(new HTTPMiddleware() {
+                @Override
+                public void handle(HTTPSession session) {
+                    super.handle(session);
+                    if (session.request.getPath().getPath().endsWith("test")) {
+                        try {
+                            session.response.setCode(400);
+                            session.response.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
             restServer.add(new SampleRouter());
 
             Server server = new ContainerServer(restServer);

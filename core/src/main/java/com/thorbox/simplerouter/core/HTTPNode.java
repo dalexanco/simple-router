@@ -39,6 +39,10 @@ public abstract class HTTPNode implements Container {
 
     public void handle(HTTPSession parentSession) {
         HTTPSession currentSession = parentSession;
+        // Check if not already commited
+        if (currentSession.response.isCommitted()) {
+            return;
+        }
         // Handle middlewares
         if(this.middlewareNode != null) {
             this.middlewareNode.handle(currentSession);
